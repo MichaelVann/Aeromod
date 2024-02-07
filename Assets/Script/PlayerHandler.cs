@@ -77,8 +77,9 @@ public class PlayerHandler : MonoBehaviour
         transform.position = m_boardedAircraft.m_exitSeatPosition.position;
         m_collider.enabled = true;
         m_boardedAircraft.SetPlayerRef(null);
-
+        transform.parent = null;
         m_boardedAircraft = null;
+        transform.eulerAngles = new Vector3(0,0, 0);
     }
 
     void CharacterControllerMovement()
@@ -118,17 +119,18 @@ public class PlayerHandler : MonoBehaviour
                 }
             }
 
-            Debug.Log(m_velocity);
 
             m_velocity = new Vector3(m_velocity.x * m_velocityFriction, m_velocity.y, m_velocity.z * m_velocityFriction);
 
             m_characterController.Move((m_velocity + characterMovement) * Time.deltaTime);
 
-            m_rotationX += -Input.GetAxis("Mouse Y") * m_lookSpeed;
-            m_rotationX = Mathf.Clamp(m_rotationX, -m_lookXLimit, m_lookXLimit);
-            m_cameraRef.transform.localRotation = Quaternion.Euler(m_rotationX, 0f, 0f);
-            transform.rotation *= Quaternion.Euler(0f, Input.GetAxis("Mouse X") * m_lookSpeed, 0f);
+
         }
+        transform.localRotation *= Quaternion.Euler(0f, Input.GetAxis("Mouse X") * m_lookSpeed, 0f);
+        m_rotationX += -Input.GetAxis("Mouse Y") * m_lookSpeed;
+        m_rotationX = Mathf.Clamp(m_rotationX, -m_lookXLimit, m_lookXLimit);
+        m_cameraRef.transform.localRotation = Quaternion.Euler(m_rotationX, 0f, 0f);
+
         m_characterController.enabled = m_canMove;
     }
 }
