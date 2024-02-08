@@ -184,6 +184,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   config: {fileID: 11400000, guid: 9ef4a73df945167448f8b7575549bb06, type: 2}
-  IsControlSurface: 1
-  InputType: 0
-  InputMultiplyer: 1
+  m_isControlSurface: 1
+  m_inputType: 0
+  m_inputMultiplyer: 1

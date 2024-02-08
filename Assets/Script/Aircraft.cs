@@ -68,8 +68,9 @@ public class Aircraft : MonoBehaviour
     {
         if (m_playerRef != null)
         {
-            m_pitch = Input.GetAxis("Vertical");
-            m_roll = Input.GetAxis("Horizontal");
+            m_pitch = Mathf.Clamp(Input.GetAxis("Pitch") + Input.GetAxis("PitchTrim"), -1f, 1f);
+            Debug.Log(m_pitch);
+            m_roll = Input.GetAxis("Roll");
             m_yaw = Input.GetAxis("Yaw");
 
             if (Input.GetKey(KeyCode.LeftShift))
@@ -98,7 +99,7 @@ public class Aircraft : MonoBehaviour
 
     private void UpdateUI()
     {
-        m_airSpeedText.text = "Speed: " + VLib.RoundToDecimalPlaces(m_rigidBody.velocity.magnitude,1).ToString() + " m/s";
+        m_airSpeedText.text = "Speed: " + VLib.RoundToDecimalPlaces(3.6f * m_rigidBody.velocity.magnitude,1).ToString("f1") + " km/h";
         m_throttleText.text = "Throttle: " + VLib.RoundToDecimalPlaces(m_throttle * m_aircraftPhysics.thrust /10f, 1).ToString() + " hp";
         m_altitudeText.text = "Alt: " + ((int)transform.position.y).ToString("D4") + " m";
         //displayText.text = "V: " + ((int)m_rigidBody.velocity.magnitude).ToString("D3") + " m/s\n";
@@ -109,7 +110,6 @@ public class Aircraft : MonoBehaviour
 
     private void FixedUpdate()
     {
-        Debug.Log(m_roll);
         SetControlSurfecesAngles(m_pitch, m_roll, m_yaw, m_flap);
         m_aircraftPhysics.SetThrustPercent(m_throttle);
         foreach (var wheel in m_wheels)
@@ -124,20 +124,20 @@ public class Aircraft : MonoBehaviour
     {
         foreach (var surface in m_controlSurfaces)
         {
-            if (surface == null || !surface.IsControlSurface) continue;
-            switch (surface.InputType)
+            if (surface == null || !surface.m_isControlSurface) continue;
+            switch (surface.m_inputType)
             {
                 case ControlInputType.Pitch:
-                    surface.SetFlapAngle(pitch * m_pitchControlSensitivity * surface.InputMultiplyer);
+                    surface.SetFlapAngle(pitch * m_pitchControlSensitivity * surface.m_inputMultiplyer);
                     break;
                 case ControlInputType.Roll:
-                    surface.SetFlapAngle(roll * m_rollControlSensitivity * surface.InputMultiplyer);
+                    surface.SetFlapAngle(roll * m_rollControlSensitivity * surface.m_inputMultiplyer);
                     break;
                 case ControlInputType.Yaw:
-                    surface.SetFlapAngle(yaw * m_yawControlSensitivity * surface.InputMultiplyer);
+                    surface.SetFlapAngle(yaw * m_yawControlSensitivity * surface.m_inputMultiplyer);
                     break;
                 case ControlInputType.Flap:
-                    surface.SetFlapAngle(m_flap * surface.InputMultiplyer);
+                    surface.SetFlapAngle(m_flap * surface.m_inputMultiplyer);
                     break;
             }
         }

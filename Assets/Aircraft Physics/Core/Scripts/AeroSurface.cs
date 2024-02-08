@@ -6,15 +6,16 @@ public enum ControlInputType { Pitch, Yaw, Roll, Flap }
 public class AeroSurface : MonoBehaviour
 {
     [SerializeField] AeroSurfaceConfig config = null;
-    public bool IsControlSurface;
-    public ControlInputType InputType;
-    public float InputMultiplyer = 1;
+    [SerializeField] public bool m_isControlSurface;
+    [SerializeField] internal ControlInputType m_inputType;
+    [SerializeField] internal float m_inputMultiplyer = 1;
 
-    private float flapAngle;
+    private float m_flapAngle;
+    internal float m_stallShake;
 
     public void SetFlapAngle(float angle)
     {
-        flapAngle = Mathf.Clamp(angle, -Mathf.Deg2Rad * 50, Mathf.Deg2Rad * 50);
+        m_flapAngle = Mathf.Clamp(angle, -Mathf.Deg2Rad * 50, Mathf.Deg2Rad * 50);
     }
 
     public BiVector3 CalculateForces(Vector3 worldAirVelocity, float airDensity, Vector3 relativePosition)
@@ -30,7 +31,7 @@ public class AeroSurface : MonoBehaviour
         // and angles at which stall happens.
         float theta = Mathf.Acos(2 * config.flapFraction - 1);
         float flapEffectivness = 1 - (theta - Mathf.Sin(theta)) / Mathf.PI;
-        float deltaLift = correctedLiftSlope * flapEffectivness * FlapEffectivnessCorrection(flapAngle) * flapAngle;
+        float deltaLift = correctedLiftSlope * flapEffectivness * FlapEffectivnessCorrection(m_flapAngle) * m_flapAngle;
 
         float zeroLiftAoaBase = config.zeroLiftAoA * Mathf.Deg2Rad;
         float zeroLiftAoA = zeroLiftAoaBase - deltaLift / correctedLiftSlope;
@@ -47,7 +48,7 @@ public class AeroSurface : MonoBehaviour
         // Calculating air velocity relative to the surface's coordinate system.
         // Z component of the velocity is discarded. 
         Vector3 airVelocity = transform.InverseTransformDirection(worldAirVelocity);
-        airVelocity = new Vector3(airVelocity.x, airVelocity.y);
+        //airVelocity = new Vector3(airVelocity.x, airVelocity.y);
         Vector3 dragDirection = transform.TransformDirection(airVelocity.normalized);
         Vector3 liftDirection = Vector3.Cross(dragDirection, transform.forward);
 
@@ -89,8 +90,8 @@ public class AeroSurface : MonoBehaviour
         Vector3 aerodynamicCoefficients;
 
         // Low angles of attack mode and stall mode curves are stitched together by a line segment. 
-        float paddingAngleHigh = Mathf.Deg2Rad * Mathf.Lerp(15, 5, (Mathf.Rad2Deg * flapAngle + 50) / 100);
-        float paddingAngleLow = Mathf.Deg2Rad * Mathf.Lerp(15, 5, (-Mathf.Rad2Deg * flapAngle + 50) / 100);
+        float paddingAngleHigh = Mathf.Deg2Rad * Mathf.Lerp(15, 5, (Mathf.Rad2Deg * m_flapAngle + 50) / 100);
+        float paddingAngleLow = Mathf.Deg2Rad * Mathf.Lerp(15, 5, (-Mathf.Rad2Deg * m_flapAngle + 50) / 100);
         float paddedStallAngleHigh = stallAngleHigh + paddingAngleHigh;
         float paddedStallAngleLow = stallAngleLow - paddingAngleLow;
 
@@ -183,7 +184,7 @@ public class AeroSurface : MonoBehaviour
         inducedAngle = Mathf.Lerp(0, inducedAngle, lerpParam);
         float effectiveAngle = angleOfAttack - zeroLiftAoA - inducedAngle;
 
-        float normalCoefficient = FrictionAt90Degrees(flapAngle) * Mathf.Sin(effectiveAngle) *
+        float normalCoefficient = FrictionAt90Degrees(m_flapAngle) * Mathf.Sin(effectiveAngle) *
             (1 / (0.56f + 0.44f * Mathf.Abs(Mathf.Sin(effectiveAngle))) -
             0.41f * (1 - Mathf.Exp(-17 / config.aspectRatio)));
         float tangentialCoefficient = 0.5f * config.skinFriction * Mathf.Cos(effectiveAngle);
@@ -218,7 +219,7 @@ public class AeroSurface : MonoBehaviour
 #if UNITY_EDITOR
     // For gizmos drawing.
     public AeroSurfaceConfig Config => config;
-    public float GetFlapAngle() => flapAngle;
+    public float GetFlapAngle() => m_flapAngle;
     public Vector3 CurrentLift { get; private set; }
     public Vector3 CurrentDrag { get; private set; }
     public Vector3 CurrentTorque { get; private set; }

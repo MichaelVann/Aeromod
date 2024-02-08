@@ -76,9 +76,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   config: {fileID: 11400000, guid: 402cdca274eaaca47ac3c6a60be57b49, type: 2}
-  IsControlSurface: 1
-  InputType: 3
-  InputMultiplyer: 1
+  m_isControlSurface: 1
+  m_inputType: 3
+  m_inputMultiplyer: 1
 --- !u!1 &4411646455206851976
 GameObject:
   m_ObjectHideFlags: 0
@@ -124,9 +124,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   config: {fileID: 11400000, guid: 077313f0cb7f35b4ca09a5061092c49a, type: 2}
-  IsControlSurface: 1
-  InputType: 2
-  InputMultiplyer: 1
+  m_isControlSurface: 1
+  m_inputType: 2
+  m_inputMultiplyer: 1
 --- !u!1 &8507654458365170677
 GameObject:
   m_ObjectHideFlags: 0

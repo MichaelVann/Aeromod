@@ -16,11 +16,18 @@ public class AircraftPhysics : MonoBehaviour
 
     Rigidbody m_rigidbody;
     float m_thrustPercent;
+    float m_stallShake = 0f;
     BiVector3 currentForceAndTorque;
 
     internal List<AeroSurface> GetAeroSurfaces()
     {
         return aerodynamicSurfaces;
+    }
+
+    internal float GetStallShake()
+    {
+        float stallShake = 0f;
+        return stallShake;
     }
 
     public void SetThrustPercent(float percent)

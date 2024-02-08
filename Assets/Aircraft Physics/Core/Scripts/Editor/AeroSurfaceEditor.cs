@@ -13,9 +13,9 @@ public class AeroSurfaceEditor : Editor
     private void OnEnable()
     {
         config = serializedObject.FindProperty("config");
-        isControlSurface = serializedObject.FindProperty("IsControlSurface");
-        inputType = serializedObject.FindProperty("InputType");
-        inputMultiplyer = serializedObject.FindProperty("InputMultiplyer");
+        isControlSurface = serializedObject.FindProperty("m_isControlSurface");
+        inputType = serializedObject.FindProperty("m_inputType");
+        inputMultiplyer = serializedObject.FindProperty("m_inputMultiplyer");
         surface = target as AeroSurface;
     }
 
@@ -24,7 +24,7 @@ public class AeroSurfaceEditor : Editor
         serializedObject.Update();
         EditorGUILayout.PropertyField(config);
         EditorGUILayout.PropertyField(isControlSurface);
-        if (surface.IsControlSurface)
+        if (surface.m_isControlSurface)
         {
             EditorGUILayout.PropertyField(inputType);
             EditorGUILayout.PropertyField(inputMultiplyer);

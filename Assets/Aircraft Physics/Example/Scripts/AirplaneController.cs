@@ -81,20 +81,20 @@ public class AirplaneController : MonoBehaviour
     {
         foreach (var surface in controlSurfaces)
         {
-            if (surface == null || !surface.IsControlSurface) continue;
-            switch (surface.InputType)
+            if (surface == null || !surface.m_isControlSurface) continue;
+            switch (surface.m_inputType)
             {
                 case ControlInputType.Pitch:
-                    surface.SetFlapAngle(pitch * pitchControlSensitivity * surface.InputMultiplyer);
+                    surface.SetFlapAngle(pitch * pitchControlSensitivity * surface.m_inputMultiplyer);
                     break;
                 case ControlInputType.Roll:
-                    surface.SetFlapAngle(roll * rollControlSensitivity * surface.InputMultiplyer);
+                    surface.SetFlapAngle(roll * rollControlSensitivity * surface.m_inputMultiplyer);
                     break;
                 case ControlInputType.Yaw:
-                    surface.SetFlapAngle(yaw * yawControlSensitivity * surface.InputMultiplyer);
+                    surface.SetFlapAngle(yaw * yawControlSensitivity * surface.m_inputMultiplyer);
                     break;
                 case ControlInputType.Flap:
-                    surface.SetFlapAngle(Flap * surface.InputMultiplyer);
+                    surface.SetFlapAngle(Flap * surface.m_inputMultiplyer);
                     break;
             }
         }
