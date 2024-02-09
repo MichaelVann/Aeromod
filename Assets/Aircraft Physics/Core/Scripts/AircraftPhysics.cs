@@ -59,7 +59,7 @@ public class AircraftPhysics : MonoBehaviour
         BiVector3 forceAndTorquePrediction = 
             CalculateAerodynamicForces(velocityPrediction, angularVelocityPrediction, Vector3.zero, 1.2f, m_rigidbody.worldCenterOfMass);
 
-        currentForceAndTorque = (forceAndTorqueThisFrame + forceAndTorquePrediction) * 0.5f;
+        currentForceAndTorque = forceAndTorqueThisFrame;// (forceAndTorqueThisFrame + forceAndTorquePrediction) * 0.5f;
         m_rigidbody.AddForce(currentForceAndTorque.p);
         m_rigidbody.AddTorque(currentForceAndTorque.q);
 

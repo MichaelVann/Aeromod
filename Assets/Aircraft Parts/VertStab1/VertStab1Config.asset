@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: VertStab1Config
   m_EditorClassIdentifier: 
   liftSlope: 6.28
-  skinFriction: 0.02
-  zeroLiftAoA: -3
+  skinFriction: 0.03
+  zeroLiftAoA: 0
   stallAngleHigh: 15
   stallAngleLow: -15
   chord: 1.77

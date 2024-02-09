@@ -110,7 +110,7 @@ public class Aircraft : MonoBehaviour
 
     private void FixedUpdate()
     {
-        SetControlSurfecesAngles(m_pitch, m_roll, m_yaw, m_flap);
+        SetControlSurfacesAngles(m_pitch, m_roll, m_yaw, m_flap);
         m_aircraftPhysics.SetThrustPercent(m_throttle);
         foreach (var wheel in m_wheels)
         {
@@ -120,7 +120,7 @@ public class Aircraft : MonoBehaviour
         }
     }
 
-    public void SetControlSurfecesAngles(float pitch, float roll, float yaw, float flap)
+    public void SetControlSurfacesAngles(float pitch, float roll, float yaw, float flap)
     {
         foreach (var surface in m_controlSurfaces)
         {
@@ -148,7 +148,7 @@ public class Aircraft : MonoBehaviour
         if (!Application.isPlaying)
         {
             FindControlSurfaces();
-            SetControlSurfecesAngles(m_pitch, m_roll, m_yaw, m_flap);
+            SetControlSurfacesAngles(m_pitch, m_roll, m_yaw, m_flap);
         }
     }
 }
