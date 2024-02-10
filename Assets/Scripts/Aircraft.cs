@@ -15,6 +15,10 @@ public class Aircraft : MonoBehaviour
     [SerializeField] TextMeshProUGUI m_throttleText;
     [SerializeField] TextMeshProUGUI m_altitudeText;
 
+    [SerializeField] AircraftEngine[] m_aircraftEngineRefs;
+
+    [SerializeField] CameraHandler m_cameraHandlerRef;
+
     PlayerHandler m_playerRef;
     Rigidbody m_rigidBody;
 
@@ -91,16 +95,32 @@ public class Aircraft : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.B))
             {
-                m_brakesTorque = m_brakesTorque > 0 ? 0 : 100f;
+                m_brakesTorque = m_brakesTorque > 0 ? 0 : 1000f;
+            }
+
+            if (Input.GetKeyDown(KeyCode.I))
+            {
+                for (int i = 0; i < m_aircraftEngineRefs.Length; i++)
+                {
+                    m_aircraftEngineRefs[i].ToggleEngine();
+                }
             }
         }
         UpdateUI();
+
+        float shakeAmount = 0f;
+        for (int i = 0; i < m_aircraftEngineRefs.Length; i++)
+        {
+            m_aircraftEngineRefs[i].UpdateFromAircraft();
+            shakeAmount += m_aircraftEngineRefs[i].GetTorque() / 15000f;
+        }
+        m_cameraHandlerRef.SetShakeAmount(shakeAmount);
     }
 
     private void UpdateUI()
     {
         m_airSpeedText.text = "Speed: " + VLib.RoundToDecimalPlaces(3.6f * m_rigidBody.velocity.magnitude,1).ToString("f1") + " km/h";
-        m_throttleText.text = "Throttle: " + VLib.RoundToDecimalPlaces(m_throttle * m_aircraftPhysics.thrust /10f, 1).ToString() + " hp";
+        m_throttleText.text = "Throttle: " + VLib.RoundToDecimalPlaces(m_throttle * 100f, 1).ToString() + "%";
         m_altitudeText.text = "Alt: " + ((int)transform.position.y).ToString("D4") + " m";
         //displayText.text = "V: " + ((int)m_rigidBody.velocity.magnitude).ToString("D3") + " m/s\n";
         //displayText.text += "A: " + ((int)transform.position.y).ToString("D4") + " m\n";
@@ -111,7 +131,10 @@ public class Aircraft : MonoBehaviour
     private void FixedUpdate()
     {
         SetControlSurfacesAngles(m_pitch, m_roll, m_yaw, m_flap);
-        m_aircraftPhysics.SetThrustPercent(m_throttle);
+        for (int i = 0; i < m_aircraftEngineRefs.Length; i++)
+        {
+            m_aircraftEngineRefs[i].SetThrottle(m_throttle);
+        }
         foreach (var wheel in m_wheels)
         {
             wheel.brakeTorque = m_brakesTorque;

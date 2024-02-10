@@ -8,14 +8,11 @@ public class AircraftPhysics : MonoBehaviour
     const float PREDICTION_TIMESTEP_FRACTION = 0.5f;
 
     [SerializeField] 
-    internal float thrust = 0;
-    [SerializeField] 
     List<AeroSurface> aerodynamicSurfaces = null;
     [SerializeField]
     List<AeroWeight> m_aeroWeights = null;
 
     Rigidbody m_rigidbody;
-    float m_thrustPercent;
     float m_stallShake = 0f;
     BiVector3 currentForceAndTorque;
 
@@ -28,11 +25,6 @@ public class AircraftPhysics : MonoBehaviour
     {
         float stallShake = 0f;
         return stallShake;
-    }
-
-    public void SetThrustPercent(float percent)
-    {
-        m_thrustPercent = percent;
     }
 
     private void Awake()
@@ -52,19 +44,19 @@ public class AircraftPhysics : MonoBehaviour
         BiVector3 forceAndTorqueThisFrame = 
             CalculateAerodynamicForces(m_rigidbody.velocity, m_rigidbody.angularVelocity, Vector3.zero, 1.2f, m_rigidbody.worldCenterOfMass);
 
-        Vector3 velocityPrediction = PredictVelocity(forceAndTorqueThisFrame.p
-            + transform.forward * thrust * m_thrustPercent + Physics.gravity * m_rigidbody.mass);
-        Vector3 angularVelocityPrediction = PredictAngularVelocity(forceAndTorqueThisFrame.q);
+        //Vector3 velocityPrediction = PredictVelocity(forceAndTorqueThisFrame.p
+        //    + transform.forward * thrust * m_thrustPercent + Physics.gravity * m_rigidbody.mass);
+        //Vector3 angularVelocityPrediction = PredictAngularVelocity(forceAndTorqueThisFrame.q);
 
-        BiVector3 forceAndTorquePrediction = 
-            CalculateAerodynamicForces(velocityPrediction, angularVelocityPrediction, Vector3.zero, 1.2f, m_rigidbody.worldCenterOfMass);
+        //BiVector3 forceAndTorquePrediction = 
+        //    CalculateAerodynamicForces(velocityPrediction, angularVelocityPrediction, Vector3.zero, 1.2f, m_rigidbody.worldCenterOfMass);
 
         currentForceAndTorque = forceAndTorqueThisFrame;// (forceAndTorqueThisFrame + forceAndTorquePrediction) * 0.5f;
         m_rigidbody.AddForce(currentForceAndTorque.p);
         m_rigidbody.AddTorque(currentForceAndTorque.q);
 
-        Vector3 forwardForce = transform.forward * thrust * m_thrustPercent;
-        m_rigidbody.AddForce(forwardForce);
+        //Vector3 forwardForce = transform.forward * thrust * m_thrustPercent;
+        //m_rigidbody.AddForce(forwardForce);
     }
 
     private BiVector3 CalculateAerodynamicForces(Vector3 velocity, Vector3 angularVelocity, Vector3 wind, float airDensity, Vector3 centerOfMass)

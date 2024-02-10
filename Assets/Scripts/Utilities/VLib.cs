@@ -206,6 +206,11 @@ public static class VLib
         return Quaternion.Euler(Vector3ToEulerAngles(a_vector3));
     }
 
+    public static Vector3 RandomVector3Direction()
+    {
+        return new Vector3(vRandom(-1f,1f), vRandom(-1f, 1f), vRandom(-1f, 1f));
+    }
+
     public static float CosDeg(float a_angle)
     {
         return Mathf.Cos(a_angle * Mathf.PI/180f);
