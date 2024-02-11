@@ -14,6 +14,7 @@ public class Aircraft : MonoBehaviour
     [SerializeField] TextMeshProUGUI m_airSpeedText;
     [SerializeField] TextMeshProUGUI m_throttleText;
     [SerializeField] TextMeshProUGUI m_altitudeText;
+    [SerializeField] InstrumentDial m_airspeedDialRef;
 
     [SerializeField] AircraftEngine[] m_aircraftEngineRefs;
 
@@ -60,6 +61,12 @@ public class Aircraft : MonoBehaviour
         m_rigidBody = GetComponent<Rigidbody>();
         m_aircraftPhysics = GetComponent<AircraftPhysics>();
         FindControlSurfaces();
+        InitialiseInstruments();
+    }
+
+    void InitialiseInstruments()
+    {
+        m_airspeedDialRef.Init("Airspeed km/h", 25, 9, 3);
     }
 
     void FindControlSurfaces()
@@ -70,6 +77,17 @@ public class Aircraft : MonoBehaviour
     float GetEngineForce()
     {
         return m_rigidBody.mass * 10000f * Time.deltaTime;
+    }
+
+    internal float GetShakeAmount()
+    {
+        float shakeAmount = 0f;
+        for (int i = 0; i < m_aircraftEngineRefs.Length; i++)
+        {
+            m_aircraftEngineRefs[i].UpdateFromAircraft();
+            shakeAmount += m_aircraftEngineRefs[i].GetTorque() / 15000f;
+        }
+        return shakeAmount;
     }
 
     // Update is called once per frame
@@ -111,14 +129,6 @@ public class Aircraft : MonoBehaviour
             }
         }
         UpdateUI();
-
-        float shakeAmount = 0f;
-        for (int i = 0; i < m_aircraftEngineRefs.Length; i++)
-        {
-            m_aircraftEngineRefs[i].UpdateFromAircraft();
-            shakeAmount += m_aircraftEngineRefs[i].GetTorque() / 15000f;
-        }
-        m_cameraHandlerRef.SetShakeAmount(shakeAmount);
     }
 
     private void UpdateUI()
@@ -126,6 +136,7 @@ public class Aircraft : MonoBehaviour
         m_airSpeedText.text = "Speed: " + VLib.RoundToDecimalPlaces(3.6f * m_rigidBody.velocity.magnitude,1).ToString("f1") + " km/h";
         m_throttleText.text = "Throttle: " + VLib.RoundToDecimalPlaces(m_throttle * 100f, 1).ToString() + "%";
         m_altitudeText.text = "Alt: " + ((int)transform.position.y).ToString("D4") + " m";
+        m_airspeedDialRef.SetValue(3.6f * m_rigidBody.velocity.magnitude);
         //displayText.text = "V: " + ((int)m_rigidBody.velocity.magnitude).ToString("D3") + " m/s\n";
         //displayText.text += "A: " + ((int)transform.position.y).ToString("D4") + " m\n";
         //displayText.text += "T: " + (int)(thrustPercent * 100) + "%\n";

@@ -15,6 +15,7 @@ public class AircraftEngine : MonoBehaviour
     bool m_engineOn = false;
     float m_throttle = 0f;
     float m_rpm = 0f;
+    float m_idleRPM = 300;
     float m_maxRPM = 1200;
     [SerializeField] float m_maxTorque = 1000f;
     float m_engineToPropellerRPMRatio = 0.5f;

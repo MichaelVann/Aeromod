@@ -6,11 +6,13 @@ public class AudioWindGenerator : MonoBehaviour
 {
     System.Random m_random = new System.Random();
     [SerializeField] float m_volume = 0.5f;
-    float m_baseLowPassFilterPosition = 1300f;
+    float m_baseLowPassFilterPosition = 1700f;
     float m_baseHighPassFilterPosition = 250f;
     [Range(-1f,2f)]
     float m_bandPassFilterPosition = 0f;
-    float m_windSpeed = 0f; 
+    float m_windSpeed = 0f;
+    float m_windVariance = 1f;
+    float m_targetWindVariance = 1f;
 
     float m_whiteNoiseStrength = 0.1f;
     float m_bandPassFilterGap = 1000f;
@@ -44,7 +46,10 @@ public class AudioWindGenerator : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        m_audioLowPassFilter.cutoffFrequency = m_baseLowPassFilterPosition * m_bandPassFilterPosition;
+        m_targetWindVariance = VLib.vRandom(0f, 0.1f) < Time.deltaTime ? VLib.vRandom(1f, 1.5f) : m_targetWindVariance;
+        m_windVariance = Mathf.Lerp(m_windVariance, m_targetWindVariance, Time.deltaTime * 5f);
+        Debug.Log(m_windVariance);
+        m_audioLowPassFilter.cutoffFrequency = m_baseLowPassFilterPosition * m_bandPassFilterPosition * m_windVariance;
         m_audioHighPassFilter.cutoffFrequency = Mathf.Clamp(m_baseHighPassFilterPosition * m_bandPassFilterPosition, 0f, 10000f);
     }
 

@@ -7,6 +7,7 @@ using UnityEngine;
 public class PlayerHandler : MonoBehaviour
 {
     [SerializeField]Camera m_cameraRef;
+    [SerializeField] CameraHandler m_cameraHandlerRef;
     [SerializeField] AudioWindGenerator m_windGenerator;
     float m_walkSpeed = 6f;
     float m_runSpeed = 12f;
@@ -37,16 +38,13 @@ public class PlayerHandler : MonoBehaviour
         m_rigidbodyRef = GetComponent<Rigidbody>();
     }
 
-    // Update is called once per frame
-    void Update()
+    void HandleInput()
     {
-        CharacterControllerMovement();
-
-        RaycastHit hit = new RaycastHit();
         if (Input.GetKeyDown(KeyCode.F))
         {
             if (m_boardedAircraft == null)
             {
+                RaycastHit hit = new RaycastHit();
                 if (Physics.Raycast(transform.position, m_cameraRef.transform.forward, out hit))
                 {
                     Aircraft aircraft = hit.transform.GetComponent<Aircraft>();
@@ -62,15 +60,25 @@ public class PlayerHandler : MonoBehaviour
             }
         }
 
+        m_cameraHandlerRef.ChangeZoom(-Input.mouseScrollDelta.y*10f);
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        CharacterControllerMovement();
+
+        HandleInput();
+
         if (m_boardedAircraft != null)
         {
             m_windGenerator.SetWindSpeed(5f + m_boardedAircraft.GetSpeed());
+            m_cameraHandlerRef.SetShakeAmount(m_boardedAircraft.GetShakeAmount());
         }
         else
         {
             m_windGenerator.SetWindSpeed(5f);
         }
-
     }
 
     void BoardAircraft(Aircraft a_aircraft)
