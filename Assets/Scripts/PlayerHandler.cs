@@ -7,6 +7,7 @@ using UnityEngine;
 public class PlayerHandler : MonoBehaviour
 {
     [SerializeField]Camera m_cameraRef;
+    [SerializeField] AudioWindGenerator m_windGenerator;
     float m_walkSpeed = 6f;
     float m_runSpeed = 12f;
     float m_jumpPower = 7f;
@@ -25,6 +26,7 @@ public class PlayerHandler : MonoBehaviour
     Rigidbody m_rigidbodyRef;
     Aircraft m_boardedAircraft;
     [SerializeField] Collider m_collider;
+
 
     // Start is called before the first frame update
     void Start()
@@ -59,6 +61,16 @@ public class PlayerHandler : MonoBehaviour
                 UnboardAircraft();
             }
         }
+
+        if (m_boardedAircraft != null)
+        {
+            m_windGenerator.SetWindSpeed(5f + m_boardedAircraft.GetSpeed());
+        }
+        else
+        {
+            m_windGenerator.SetWindSpeed(5f);
+        }
+
     }
 
     void BoardAircraft(Aircraft a_aircraft)

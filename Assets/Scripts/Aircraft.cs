@@ -47,6 +47,11 @@ public class Aircraft : MonoBehaviour
 
     AircraftPhysics m_aircraftPhysics;
 
+    internal float GetSpeed()
+    {
+        return m_rigidBody.velocity.magnitude;
+    }
+
     internal void SetPlayerRef(PlayerHandler a_playerRef) { m_playerRef = a_playerRef; }
 
     // Start is called before the first frame update
@@ -73,7 +78,6 @@ public class Aircraft : MonoBehaviour
         if (m_playerRef != null)
         {
             m_pitch = Mathf.Clamp(Input.GetAxis("Pitch") + Input.GetAxis("PitchTrim"), -1f, 1f);
-            Debug.Log(m_pitch);
             m_roll = Input.GetAxis("Roll");
             m_yaw = Input.GetAxis("Yaw");
 
