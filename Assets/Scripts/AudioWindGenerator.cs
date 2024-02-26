@@ -48,7 +48,6 @@ public class AudioWindGenerator : MonoBehaviour
     {
         m_targetWindVariance = VLib.vRandom(0f, 0.1f) < Time.deltaTime ? VLib.vRandom(1f, 1.5f) : m_targetWindVariance;
         m_windVariance = Mathf.Lerp(m_windVariance, m_targetWindVariance, Time.deltaTime * 5f);
-        Debug.Log(m_windVariance);
         m_audioLowPassFilter.cutoffFrequency = m_baseLowPassFilterPosition * m_bandPassFilterPosition * m_windVariance;
         m_audioHighPassFilter.cutoffFrequency = Mathf.Clamp(m_baseHighPassFilterPosition * m_bandPassFilterPosition, 0f, 10000f);
     }

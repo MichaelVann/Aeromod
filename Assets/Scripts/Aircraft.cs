@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using static UnityEngine.UI.CanvasScaler;
 
 public class Aircraft : MonoBehaviour
 {
@@ -15,6 +16,9 @@ public class Aircraft : MonoBehaviour
     [SerializeField] TextMeshProUGUI m_throttleText;
     [SerializeField] TextMeshProUGUI m_altitudeText;
     [SerializeField] InstrumentDial m_airspeedDialRef;
+    [SerializeField] InstrumentDial m_rpmDialRef;
+    [SerializeField] InstrumentDial m_altitudeDialRef;
+    [SerializeField] InstrumentDial m_fuelDialRef;
 
     [SerializeField] AircraftEngine[] m_aircraftEngineRefs;
 
@@ -67,6 +71,9 @@ public class Aircraft : MonoBehaviour
     void InitialiseInstruments()
     {
         m_airspeedDialRef.Init("Airspeed km/h", 25, 9, 3);
+        m_rpmDialRef.Init("RPM", 500, 5, 4);
+        m_altitudeDialRef.Init("Altitude 100m", 100, 11, 3, 0f, true);
+        m_fuelDialRef.Init("Fuel Litres", (int)(m_aircraftEngineRefs[0].GetFuelCapacity()/10f), 11, 1);
     }
 
     void FindControlSurfaces()
@@ -84,7 +91,6 @@ public class Aircraft : MonoBehaviour
         float shakeAmount = 0f;
         for (int i = 0; i < m_aircraftEngineRefs.Length; i++)
         {
-            m_aircraftEngineRefs[i].UpdateFromAircraft();
             shakeAmount += m_aircraftEngineRefs[i].GetTorque() / 15000f;
         }
         return shakeAmount;
@@ -137,6 +143,9 @@ public class Aircraft : MonoBehaviour
         m_throttleText.text = "Throttle: " + VLib.RoundToDecimalPlaces(m_throttle * 100f, 1).ToString() + "%";
         m_altitudeText.text = "Alt: " + ((int)transform.position.y).ToString("D4") + " m";
         m_airspeedDialRef.SetValue(3.6f * m_rigidBody.velocity.magnitude);
+        m_rpmDialRef.SetValue(m_aircraftEngineRefs[0].GetRPM());
+        m_altitudeDialRef.SetValue(transform.position.y);
+        m_fuelDialRef.SetValue(m_aircraftEngineRefs[0].GetFuelLevel());
         //displayText.text = "V: " + ((int)m_rigidBody.velocity.magnitude).ToString("D3") + " m/s\n";
         //displayText.text += "A: " + ((int)transform.position.y).ToString("D4") + " m\n";
         //displayText.text += "T: " + (int)(thrustPercent * 100) + "%\n";

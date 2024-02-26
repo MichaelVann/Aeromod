@@ -9,6 +9,7 @@ public class InstrumentDial : MonoBehaviour
     [SerializeField] GameObject m_needlePrefab;
     [SerializeField] GameObject m_textPrefab;
     [SerializeField] GameObject m_readingNeedleRef;
+    [SerializeField] GameObject m_secondReadingNeedleRef;
     [SerializeField] Transform m_outerMarkingsContainerRef;
     [SerializeField] TextMeshProUGUI m_dialTitleTextRef;
 
@@ -16,6 +17,8 @@ public class InstrumentDial : MonoBehaviour
     int m_maxReading = 400;
     float m_outerNeedleHalfGap = 45f;
     float m_measuredValue = 0f;
+    bool m_showingSecondNeedle = false;
+    float m_secondNeedleScale;
 
     internal void SetValue(float a_value) { m_measuredValue = a_value; RefreshReadingNeedle(); }
 
@@ -24,11 +27,15 @@ public class InstrumentDial : MonoBehaviour
     {
     }
 
-    internal void Init(string a_titleString, int a_majorDivisionAmount, int a_majorDivisions, int a_subDivisions)
+    internal void Init(string a_titleString, int a_majorDivisionAmount, int a_majorDivisions, int a_subDivisions, float a_outerNeedleHalfGap = 45f, bool a_dualNeedle = false, float a_secondNeedleScale = 10f)
     {
         m_dialTitleTextRef.text = a_titleString;
+        m_outerNeedleHalfGap = a_outerNeedleHalfGap;
         m_maxReading = a_majorDivisionAmount * (a_majorDivisions-1);
         SpawnFaceMarkings(a_majorDivisions, a_subDivisions);
+        m_showingSecondNeedle = a_dualNeedle;
+        m_secondReadingNeedleRef.SetActive(m_showingSecondNeedle);
+        m_secondNeedleScale = a_secondNeedleScale;
     }
 
     void SpawnOuterNeedle(float a_angle, float a_size, bool a_spawningText = false, int a_textValue = 0)
@@ -54,7 +61,8 @@ public class InstrumentDial : MonoBehaviour
             float angularSpaceUsed = (360f - m_outerNeedleHalfGap * 2f);
             float majorDivisionGap = angularSpaceUsed / (a_majorDivisions - 1);
             float angle = -m_outerNeedleHalfGap - majorDivisionGap * i;
-            SpawnOuterNeedle(angle, 1f, true, (i * m_maxReading)/ (a_majorDivisions-1));
+            bool spawningText = m_outerNeedleHalfGap == 0f ? i < a_majorDivisions - 1 : true;
+            SpawnOuterNeedle(angle, 1f, spawningText, (i * m_maxReading)/ (a_majorDivisions-1));
 
             if (i < a_majorDivisions-1)
             {
@@ -68,10 +76,19 @@ public class InstrumentDial : MonoBehaviour
 
     void RefreshReadingNeedle()
     {
-        float angle = 180f;
-        float reading = Mathf.Clamp(m_measuredValue / m_maxReading, 0f, 1f);
+        float reading = m_measuredValue / m_maxReading;
+        if (!m_showingSecondNeedle)
+        {
+            reading = Mathf.Clamp(reading, 0f, 1f);
+        }
+        float angle = 0f;
         angle -= m_outerNeedleHalfGap + reading * (360f - m_outerNeedleHalfGap * 2f);
-        m_readingNeedleRef.transform.localEulerAngles = new Vector3(0f, 0f, angle);
+        m_readingNeedleRef.transform.localEulerAngles = new Vector3(0f, 0f, angle + 180f);
+        if (m_showingSecondNeedle)
+        {
+            float secondAngle = 180f + angle / m_secondNeedleScale;
+            m_secondReadingNeedleRef.transform.localEulerAngles = new Vector3(0f, 0f, secondAngle);
+        }
     }
 
     // Update is called once per frame

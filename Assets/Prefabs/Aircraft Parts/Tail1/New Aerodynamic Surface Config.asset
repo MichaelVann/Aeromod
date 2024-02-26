@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31ad2ae223750974380ba545a828f9a1, type: 3}
   m_Name: New Aerodynamic Surface Config
   m_EditorClassIdentifier: 
-  liftSlope: 1
+  liftSlope: 4
   skinFriction: 0.05
   zeroLiftAoA: 0
   stallAngleHigh: 15
   stallAngleLow: -15
   chord: 3.94
   flapFraction: 0
-  span: 1
+  span: 0.7
   autoAspectRatio: 1
-  aspectRatio: 0.2538071
+  aspectRatio: 0.17766497

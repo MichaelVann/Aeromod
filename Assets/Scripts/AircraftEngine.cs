@@ -17,18 +17,46 @@ public class AircraftEngine : MonoBehaviour
     float m_rpm = 0f;
     float m_idleRPM = 300;
     float m_maxRPM = 1200;
+    float m_timeToReachDesiredRPM = 12f;
     [SerializeField] float m_maxTorque = 1000f;
     float m_engineToPropellerRPMRatio = 0.5f;
     bool m_transitioning = false;
     Rigidbody m_owningRigidbody;
 
+    //Fuel
+    [SerializeField] FuelTank[] m_availableFuelTanks;
+    const float m_litresASecond = 0.0108f;
+
+    internal float GetRPM() {  return m_rpm; }
     float GetRPMRatio() { return m_rpm / m_maxRPM; }
 
     internal float GetTorque() { return m_maxTorque * GetRPMRatio(); }
 
+
     internal void ToggleEngine() { SetEngineOn(!m_engineOn); }
 
     internal void SetThrottle(float a_throttle) { m_throttle = a_throttle; }
+
+    internal float GetFuelCapacity() 
+    {
+        float capacity = 0f;
+        for (int i = 0; i < m_availableFuelTanks.Length; i++)
+        {
+            capacity += m_availableFuelTanks[i].GetCapacity();
+        }
+        return capacity;
+    }
+
+
+    internal float GetFuelLevel()
+    {
+        float totalFuel = 0f;
+        for (int i = 0; i < m_availableFuelTanks.Length; i++)
+        {
+            totalFuel += m_availableFuelTanks[i].GetFuel();
+        }
+        return totalFuel;
+    }
 
     internal void SetEngineOn(bool a_on)
     {
@@ -55,14 +83,47 @@ public class AircraftEngine : MonoBehaviour
         SetEngineOn(false);
     }
 
+    void UpdateRPM()
+    {
+        float desiredRPM = m_engineOn ? m_maxRPM * m_throttle : 0f;
+        m_rpm = Mathf.Lerp(m_rpm, desiredRPM, Time.deltaTime / m_timeToReachDesiredRPM);
+        float rpmRatio = GetRPMRatio();
+        m_engineAudioSource.pitch = m_engineAudioSource.volume = 0.75f + rpmRatio * 0.5f;
+        m_propellerRef.SetRPM(m_rpm * m_engineToPropellerRPMRatio);
+    }
+
     // Update is called once per frame
     void Update()
     {
-        if (m_engineOn && !m_engineAudioSource.isPlaying)
+        UpdateRPM();
+
+        if (m_engineOn)
         {
-            m_engineAudioSource.clip = m_engineRunningAudio;
-            m_engineAudioSource.loop = true;
-            m_engineAudioSource.Play();
+            if (!m_engineAudioSource.isPlaying)
+            {
+                m_engineAudioSource.clip = m_engineRunningAudio;
+                m_engineAudioSource.loop = true;
+                m_engineAudioSource.Play();
+            }
+
+            FuelTank usedFuelTank = null;
+
+            for (int i = 0; i < m_availableFuelTanks.Length && usedFuelTank == null; i++)
+            {
+                if (m_availableFuelTanks[i].GetFuel() > 0f)
+                {
+                    usedFuelTank = m_availableFuelTanks[i];
+                }
+            }
+
+            if (usedFuelTank != null)
+            {
+                usedFuelTank.ChangeFuelAmount(-m_litresASecond * Time.deltaTime * m_throttle);
+            }
+            else
+            {
+                ToggleEngine();
+            }
         }
     }
 
@@ -72,12 +133,5 @@ public class AircraftEngine : MonoBehaviour
         m_owningRigidbody.AddForce(forwardForce);
     }
 
-    internal void UpdateFromAircraft()
-    {
-        float desiredRPM = m_engineOn ? m_maxRPM * m_throttle : 0f;
-        m_rpm = Mathf.Lerp(m_rpm, desiredRPM, Time.deltaTime/4f);
-        float rpmRatio = GetRPMRatio();
-        m_engineAudioSource.pitch = m_engineAudioSource.volume = 0.75f + rpmRatio * 0.5f;
-        m_propellerRef.SetRPM(m_rpm * m_engineToPropellerRPMRatio);
-    }
+
 }
