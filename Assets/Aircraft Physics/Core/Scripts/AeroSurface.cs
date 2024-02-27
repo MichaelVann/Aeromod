@@ -1,17 +1,20 @@
 ﻿using System;
 using UnityEngine;
 
-public enum ControlInputType { Pitch, Yaw, Roll, Flap }
+public enum ControlInputType { None, Pitch, Yaw, Roll, Flap }
 
 public class AeroSurface : MonoBehaviour
 {
-    [SerializeField] AeroSurfaceConfig config = null;
+    [SerializeField] AeroSurfaceConfig m_config = null;
     [SerializeField] public bool m_isControlSurface;
     [SerializeField] internal ControlInputType m_inputType;
     [SerializeField] internal float m_inputMultiplyer = 1;
 
     private float m_flapAngle;
     internal float m_stallShake;
+
+    internal void SetAeroSurfaceConfig(AeroSurfaceConfig a_config) { m_config = a_config; }
+    internal void SetControlInputType(ControlInputType a_inputType) { m_inputType = a_inputType; m_isControlSurface = a_inputType != ControlInputType.None; }
 
     public void SetFlapAngle(float angle)
     {
@@ -21,26 +24,26 @@ public class AeroSurface : MonoBehaviour
     public BiVector3 CalculateForces(Vector3 worldAirVelocity, float airDensity, Vector3 relativePosition)
     {
         BiVector3 forceAndTorque = new BiVector3();
-        if (!gameObject.activeInHierarchy || config == null) return forceAndTorque;
+        if (!gameObject.activeInHierarchy || m_config == null) return forceAndTorque;
 
         // Accounting for aspect ratio effect on lift coefficient.
-        float correctedLiftSlope = config.liftSlope * config.aspectRatio /
-           (config.aspectRatio + 2 * (config.aspectRatio + 4) / (config.aspectRatio + 2));
+        float correctedLiftSlope = m_config.liftSlope * m_config.aspectRatio /
+           (m_config.aspectRatio + 2 * (m_config.aspectRatio + 4) / (m_config.aspectRatio + 2));
 
         // Calculating flap deflection influence on zero lift angle of attack
         // and angles at which stall happens.
-        float theta = Mathf.Acos(2 * config.flapFraction - 1);
+        float theta = Mathf.Acos(2 * m_config.flapFraction - 1);
         float flapEffectivness = 1 - (theta - Mathf.Sin(theta)) / Mathf.PI;
         float deltaLift = correctedLiftSlope * flapEffectivness * FlapEffectivnessCorrection(m_flapAngle) * m_flapAngle;
 
-        float zeroLiftAoaBase = config.zeroLiftAoA * Mathf.Deg2Rad;
+        float zeroLiftAoaBase = m_config.zeroLiftAoA * Mathf.Deg2Rad;
         float zeroLiftAoA = zeroLiftAoaBase - deltaLift / correctedLiftSlope;
 
-        float stallAngleHighBase = config.stallAngleHigh * Mathf.Deg2Rad;
-        float stallAngleLowBase = config.stallAngleLow * Mathf.Deg2Rad;
+        float stallAngleHighBase = m_config.stallAngleHigh * Mathf.Deg2Rad;
+        float stallAngleLowBase = m_config.stallAngleLow * Mathf.Deg2Rad;
 
-        float clMaxHigh = correctedLiftSlope * (stallAngleHighBase - zeroLiftAoaBase) + deltaLift * LiftCoefficientMaxFraction(config.flapFraction);
-        float clMaxLow = correctedLiftSlope * (stallAngleLowBase - zeroLiftAoaBase) + deltaLift * LiftCoefficientMaxFraction(config.flapFraction);
+        float clMaxHigh = correctedLiftSlope * (stallAngleHighBase - zeroLiftAoaBase) + deltaLift * LiftCoefficientMaxFraction(m_config.flapFraction);
+        float clMaxLow = correctedLiftSlope * (stallAngleLowBase - zeroLiftAoaBase) + deltaLift * LiftCoefficientMaxFraction(m_config.flapFraction);
 
         float stallAngleHigh = zeroLiftAoA + clMaxHigh / correctedLiftSlope;
         float stallAngleLow = zeroLiftAoA + clMaxLow / correctedLiftSlope;
@@ -52,7 +55,7 @@ public class AeroSurface : MonoBehaviour
         Vector3 dragDirection = transform.TransformDirection(airVelocity.normalized);
         Vector3 liftDirection = Vector3.Cross(dragDirection, transform.forward);
 
-        float area = config.chord * config.span;
+        float area = m_config.chord * m_config.span;
         float dynamicPressure = 0.5f * airDensity * airVelocity.sqrMagnitude;
         float angleOfAttack = Mathf.Atan2(airVelocity.y, -airVelocity.x);
         
@@ -64,7 +67,7 @@ public class AeroSurface : MonoBehaviour
 
         Vector3 lift = liftDirection * aerodynamicCoefficients.x * dynamicPressure * area;
         Vector3 drag = dragDirection * aerodynamicCoefficients.y * dynamicPressure * area;
-        Vector3 torque = -transform.forward * aerodynamicCoefficients.z * dynamicPressure * area * config.chord;
+        Vector3 torque = -transform.forward * aerodynamicCoefficients.z * dynamicPressure * area * m_config.chord;
 
         forceAndTorque.p += lift + drag;
         forceAndTorque.q += Vector3.Cross(relativePosition, forceAndTorque.p);
@@ -140,10 +143,10 @@ public class AeroSurface : MonoBehaviour
                                                   float zeroLiftAoA)
     {
         float liftCoefficient = correctedLiftSlope * (angleOfAttack - zeroLiftAoA);
-        float inducedAngle = liftCoefficient / (Mathf.PI * config.aspectRatio);
+        float inducedAngle = liftCoefficient / (Mathf.PI * m_config.aspectRatio);
         float effectiveAngle = angleOfAttack - zeroLiftAoA - inducedAngle;
 
-        float tangentialCoefficient = config.skinFriction * Mathf.Cos(effectiveAngle);
+        float tangentialCoefficient = m_config.skinFriction * Mathf.Cos(effectiveAngle);
         
         float normalCoefficient = (liftCoefficient +
             Mathf.Sin(effectiveAngle) * tangentialCoefficient) / Mathf.Cos(effectiveAngle);
@@ -168,7 +171,7 @@ public class AeroSurface : MonoBehaviour
         {
             liftCoefficientLowAoA = correctedLiftSlope * (stallAngleLow - zeroLiftAoA);
         }
-        float inducedAngle = liftCoefficientLowAoA / (Mathf.PI * config.aspectRatio);
+        float inducedAngle = liftCoefficientLowAoA / (Mathf.PI * m_config.aspectRatio);
 
         float lerpParam;
         if (angleOfAttack > stallAngleHigh)
@@ -186,8 +189,8 @@ public class AeroSurface : MonoBehaviour
 
         float normalCoefficient = FrictionAt90Degrees(m_flapAngle) * Mathf.Sin(effectiveAngle) *
             (1 / (0.56f + 0.44f * Mathf.Abs(Mathf.Sin(effectiveAngle))) -
-            0.41f * (1 - Mathf.Exp(-17 / config.aspectRatio)));
-        float tangentialCoefficient = 0.5f * config.skinFriction * Mathf.Cos(effectiveAngle);
+            0.41f * (1 - Mathf.Exp(-17 / m_config.aspectRatio)));
+        float tangentialCoefficient = 0.5f * m_config.skinFriction * Mathf.Cos(effectiveAngle);
 
         float liftCoefficient = normalCoefficient * Mathf.Cos(effectiveAngle) - tangentialCoefficient * Mathf.Sin(effectiveAngle);
         float dragCoefficient = normalCoefficient * Mathf.Sin(effectiveAngle) + tangentialCoefficient * Mathf.Cos(effectiveAngle);
@@ -218,7 +221,7 @@ public class AeroSurface : MonoBehaviour
 
 #if UNITY_EDITOR
     // For gizmos drawing.
-    public AeroSurfaceConfig Config => config;
+    public AeroSurfaceConfig Config => m_config;
     public float GetFlapAngle() => m_flapAngle;
     public Vector3 CurrentLift { get; private set; }
     public Vector3 CurrentDrag { get; private set; }

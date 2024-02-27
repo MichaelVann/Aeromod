@@ -16,6 +16,21 @@ public class AeroSurfaceConfig : ScriptableObject
     public bool autoAspectRatio = true;
     public float aspectRatio = 2;
 
+
+
+
+    internal AeroSurfaceConfig()
+    {
+
+    }
+
+    internal AeroSurfaceConfig(float a_chord, float a_span, float a_flapFraction)
+    {
+        chord = a_chord;
+        span = a_span;
+        flapFraction = a_flapFraction;
+    }
+
     private void OnValidate()
     {
         if (flapFraction > 0.4f)

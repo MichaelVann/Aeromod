@@ -15,6 +15,10 @@ public static class VLib
     internal static Color COLOR_yellow = new Color(1f,188f/255f,0f);
     public static string GetEnumName<T>(T a_type) { return Enum.GetName(typeof(T), a_type); }
 
+    public const float _degreesToRadians = 3.14159265358979323f / 180f;
+
+    public const float _msToKmh = 3.6f;
+
     public static string FirstLetterToUpperCaseOrConvertNullToEmptyString(this string s)
     {
         if (string.IsNullOrEmpty(s))

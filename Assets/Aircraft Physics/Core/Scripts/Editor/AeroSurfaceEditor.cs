@@ -12,7 +12,7 @@ public class AeroSurfaceEditor : Editor
 
     private void OnEnable()
     {
-        config = serializedObject.FindProperty("config");
+        config = serializedObject.FindProperty("m_config");
         isControlSurface = serializedObject.FindProperty("m_isControlSurface");
         inputType = serializedObject.FindProperty("m_inputType");
         inputMultiplyer = serializedObject.FindProperty("m_inputMultiplyer");
