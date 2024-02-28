@@ -1,23 +1,28 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class AeroFin : MonoBehaviour
 {
-    float m_baseChord;
-    float m_span;
-    float m_tipChord;
-    float m_tipOffsetRatio;
+    [SerializeField] float m_baseChord = 1.43f;
+    [SerializeField] float m_span = 4f;
+    [SerializeField] float m_tipChord = 1.43f;
+    [SerializeField] float m_tipOffsetRatio = 0f;
     float m_tipOffset;
-    float m_spanRounding;
+    [SerializeField] float m_spanRounding = 0.4f;
     const int m_spanRoundingFidelity = 10;
-    float m_tipRounding;
+    [SerializeField] float m_tipRounding = 10f;
     const int m_tipRoundingFidelity = 10;
-    float m_finWidth;
-    float m_flapFraction;
-    float m_controlSurfaceFraction;
+    [SerializeField] float m_finWidth = 0.1f;
+    [SerializeField] float m_flapFraction = 0.3f;
+    [SerializeField] float m_controlSurfaceFraction = 0.5f;
     float m_centreOfLiftZOffset = 1f/4f;
-    ControlInputType m_controlInputType;
+    [SerializeField] ControlInputType m_controlInputType;
+    [SerializeField] bool m_leftSide = false;
+    [SerializeField] bool m_centred = false;
+    int m_mirrorMultiplier = 1;
+    float m_rootX = 0f;
 
     List<AeroSurface> m_aeroSurfaces;
 
@@ -30,26 +35,29 @@ public class AeroFin : MonoBehaviour
     internal List<AeroSurface> GetAeroSurfaces() { return m_aeroSurfaces; }
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         m_aeroSurfaces = new List<AeroSurface>();
         //Init(2f, 4f, 1f, 1f, true);
-        Init(1.43f, 4f, 1.43f, 1f, 0.4f, 10f, 0.3f, 0.5f, ControlInputType.Roll);
+        Init(m_baseChord, m_span, m_tipChord, m_tipOffsetRatio, m_spanRounding, m_tipRounding, m_flapFraction, m_controlSurfaceFraction, m_controlInputType, m_leftSide, m_centred);
     }
 
-    internal void Init(float a_baseChord, float a_span, float a_tipChord, float a_tipOffsetRatio, float a_sparRounding, float a_tipRounding, float a_flapFraction, float a_controlSurfaceFraction, ControlInputType a_controlInputType)
+    internal void Init(float a_baseChord, float a_span, float a_tipChord, float a_tipOffsetRatio, float a_spanRounding, float a_tipRounding, float a_flapFraction, float a_controlSurfaceFraction, ControlInputType a_controlInputType, bool a_leftHanded, bool a_centred)
     {
         m_baseChord = a_baseChord;
         m_span = a_span;
         m_tipChord = a_tipChord;
         m_tipOffsetRatio = a_tipOffsetRatio;
         m_tipOffset = m_tipOffsetRatio * (m_baseChord - m_tipChord)/2f;
-        m_spanRounding = a_sparRounding;
+        m_spanRounding = a_spanRounding;
         m_tipRounding = a_tipRounding;
-        m_finWidth = 0.1f;
         m_flapFraction = a_flapFraction;
         m_controlSurfaceFraction = a_controlSurfaceFraction;
         m_controlInputType = a_controlInputType;
+        m_mirrorMultiplier = a_leftHanded ? -1 : 1;
+        m_centred = a_centred;
+
+        m_rootX = m_centred ? -m_span / 2f : 0f;
 
         //Mesh
         SetUpMesh();
@@ -68,11 +76,13 @@ public class AeroFin : MonoBehaviour
         float averageChordLength = (m_baseChord + m_tipChord) / 2f;
         AeroSurfaceConfig config = new AeroSurfaceConfig(averageChordLength, a_span, 0.4f);
         aeroSurface.SetAeroSurfaceConfig(config);
-        aeroSurface.SetControlInputType(a_inputType);
-        aeroSurface.transform.localPosition = new Vector3(a_offset + a_span / 2f, 0f, averageChordLength * m_centreOfLiftZOffset);
+
+        float xPos = m_mirrorMultiplier * (m_rootX + a_offset + a_span / 2f);
+        aeroSurface.transform.localPosition = new Vector3(xPos, 0f, averageChordLength * m_centreOfLiftZOffset + m_tipOffset/2f);
         aeroSurface.transform.localEulerAngles = new Vector3(0f, -90f, 0f);
 
-        aeroSurface.SetControlInputType(a_inputType);
+        float controlSurfaceMultiplier = a_inputType == ControlInputType.Roll ? -m_mirrorMultiplier : 1f;
+        aeroSurface.SetControlInputType(a_inputType, controlSurfaceMultiplier);
     }
 
     void SetUpAeroSurfaces()
@@ -116,11 +126,28 @@ public class AeroFin : MonoBehaviour
                 }
                 float lerpZPos = Mathf.Lerp(lerpA, lerpB, spanPos);
                 vert.z = lerpZPos + sinPos * m_span * m_spanRounding / 100f;
-                vert.x = 0f;
+                vert.x = m_rootX;
                 vert.x += m_span * (a_front ? spanPos : 1f - spanPos);
+                vert.x *= m_mirrorMultiplier;
                 vert.y = m_finWidth / 2f;
                 a_vertList.Add(vert);
             }
+        }
+    }
+
+    void AddTriangle(List<int> a_triList, int a_firstVert, int a_secondVert, int a_thirdVert)
+    {
+        if (m_mirrorMultiplier == 1)
+        {
+            a_triList.Add(a_firstVert);
+            a_triList.Add(a_secondVert);
+            a_triList.Add(a_thirdVert);
+        }
+        else if (m_mirrorMultiplier == -1)
+        {
+            a_triList.Add(a_thirdVert);
+            a_triList.Add(a_secondVert);
+            a_triList.Add(a_firstVert);
         }
     }
 
@@ -133,8 +160,8 @@ public class AeroFin : MonoBehaviour
         List<Vector3> topVerts = new List<Vector3>();
 
         //Front edge
-        Vector3 frontRootVert = new Vector3(0f, m_finWidth / 2f, m_baseChord / 2f);
-        Vector3 frontTipVert = new Vector3(m_span, m_finWidth / 2f, m_tipChord / 2f);
+        Vector3 frontRootVert = new Vector3(m_rootX * m_mirrorMultiplier, m_finWidth / 2f, m_baseChord / 2f);
+        Vector3 frontTipVert = new Vector3(m_mirrorMultiplier * (m_rootX + m_span), m_finWidth / 2f, m_tipChord / 2f);
         frontTipVert.z += m_tipOffset;
         topVerts.Add(frontRootVert);
         AddSpanRounding(topVerts, true);
@@ -150,8 +177,8 @@ public class AeroFin : MonoBehaviour
             {
                 float chordPos = (i + 1f) / (m_tipRoundingFidelity + 1f);
                 Vector3 vert = new Vector3();
-                vert.x = m_span + Mathf.Sin(Mathf.PI * chordPos) * m_tipChord * m_tipRounding /100f;
-                //vert.x += m_tipChord/10f;
+                vert.x = m_rootX + m_span + Mathf.Sin(Mathf.PI * chordPos) * m_tipChord * m_tipRounding /100f;
+                vert.x *= m_mirrorMultiplier;
                 vert.z = m_tipChord / 2f + m_tipOffset;
                 vert.z -= m_tipChord * Mathf.Pow(chordPos, 1f + m_tipOffsetRatio/5f);
                 vert.y = m_finWidth / 2f;
@@ -159,21 +186,17 @@ public class AeroFin : MonoBehaviour
 
                 if (i > 0)
                 {
-                    topTriangles.Add(m_topMeshVertIndex - 1);
-                    topTriangles.Add(m_topMeshVertIndex + i - 1);
-                    topTriangles.Add(m_topMeshVertIndex + i);
+                    AddTriangle(topTriangles, m_topMeshVertIndex - 1, m_topMeshVertIndex + i - 1, m_topMeshVertIndex + i);
                 }
             }
-            topTriangles.Add(m_topMeshVertIndex - 1);
-            topTriangles.Add(m_topMeshVertIndex + m_tipRoundingFidelity - 1);
-            topTriangles.Add(m_topMeshVertIndex + m_tipRoundingFidelity);
+            AddTriangle(topTriangles, m_topMeshVertIndex - 1, m_topMeshVertIndex + m_tipRoundingFidelity - 1, m_topMeshVertIndex + m_tipRoundingFidelity);
         }
 
         m_topMeshVertIndex = topVerts.Count;
 
         //Front edge
-        Vector3 reatRootVert = new Vector3(0f, m_finWidth / 2f, -m_baseChord / 2f);
-        Vector3 rearTipVert = new Vector3(m_span, m_finWidth / 2f, -m_tipChord / 2f);
+        Vector3 reatRootVert = new Vector3(m_rootX * m_mirrorMultiplier, m_finWidth / 2f, -m_baseChord / 2f);
+        Vector3 rearTipVert = new Vector3(m_mirrorMultiplier * (m_rootX + m_span), m_finWidth / 2f, -m_tipChord / 2f);
         rearTipVert.z += m_tipOffset;
 
         topVerts.Add(rearTipVert);
@@ -188,14 +211,8 @@ public class AeroFin : MonoBehaviour
         {
             int anchorVert = 2 * surfaceQuadsNeeded + 1 - i + (m_tipRounding > 0 ? m_tipRoundingFidelity : 0);
 
-            //First tri
-            topTriangles.Add(i);
-            topTriangles.Add(i+1);
-            topTriangles.Add(anchorVert);
-            //Second Tri
-            topTriangles.Add(i+1);
-            topTriangles.Add(anchorVert-1);
-            topTriangles.Add(anchorVert);
+            AddTriangle(topTriangles, i, i + 1, anchorVert);
+            AddTriangle(topTriangles, i +1 , anchorVert - 1, anchorVert);
         }
 
         //topTriangles.Add(0);
@@ -234,15 +251,9 @@ public class AeroFin : MonoBehaviour
         //Stitch top and bottom
         for (int i = 1; i < topVerts.Count; i++)
         {
-            stitchTriangles.Add(i-1 + m_topMeshVertIndex);
-            stitchTriangles.Add(i);
-            stitchTriangles.Add(i-1);
-
-            stitchTriangles.Add(i - 1 + m_topMeshVertIndex);
-            stitchTriangles.Add(i + m_topMeshVertIndex);
-            stitchTriangles.Add(i);
+            AddTriangle(stitchTriangles, i - 1 + m_topMeshVertIndex, i, i - 1);
+            AddTriangle(stitchTriangles, i - 1 + m_topMeshVertIndex, i + m_topMeshVertIndex, i);
         }
-
 
         meshVerts.AddRange(topVerts);
         meshVerts.AddRange(bottomVerts);

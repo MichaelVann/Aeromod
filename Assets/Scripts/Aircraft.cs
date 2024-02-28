@@ -70,7 +70,7 @@ public class Aircraft : MonoBehaviour
 
     void InitialiseInstruments()
     {
-        m_airspeedDialRef.Init("Airspeed km/h", 25, 9, 3);
+        m_airspeedDialRef.Init("Airspeed mph", 25, 9, 3);
         m_rpmDialRef.Init("RPM", 500, 5, 4);
         m_altitudeDialRef.Init("Altitude 100m", 100, 11, 3, 0f, true);
         m_fuelDialRef.Init("Fuel Litres", (int)(m_aircraftEngineRefs[0].GetFuelCapacity()/10f), 11, 1);
@@ -79,11 +79,6 @@ public class Aircraft : MonoBehaviour
     void FindControlSurfaces()
     {
         m_controlSurfaces = new List<AeroSurface>(GetComponentsInChildren<AeroSurface>()); ;
-    }
-
-    float GetEngineForce()
-    {
-        return m_rigidBody.mass * 10000f * Time.deltaTime;
     }
 
     internal float GetShakeAmount()
@@ -139,10 +134,10 @@ public class Aircraft : MonoBehaviour
 
     private void UpdateUI()
     {
-        m_airSpeedText.text = "Speed: " + VLib.RoundToDecimalPlaces(3.6f * m_rigidBody.velocity.magnitude,1).ToString("f1") + " km/h";
+        m_airSpeedText.text = "Speed: " + VLib.RoundToDecimalPlaces(VLib._msToMph * m_rigidBody.velocity.magnitude,1).ToString("f1") + " mph";
         m_throttleText.text = "Throttle: " + VLib.RoundToDecimalPlaces(m_throttle * 100f, 1).ToString() + "%";
         m_altitudeText.text = "Alt: " + ((int)transform.position.y).ToString("D4") + " m";
-        m_airspeedDialRef.SetValue(3.6f * m_rigidBody.velocity.magnitude);
+        m_airspeedDialRef.SetValue(VLib._msToMph * m_rigidBody.velocity.magnitude);
         m_rpmDialRef.SetValue(m_aircraftEngineRefs[0].GetRPM());
         m_altitudeDialRef.SetValue(transform.position.y);
         m_fuelDialRef.SetValue(m_aircraftEngineRefs[0].GetFuelLevel());

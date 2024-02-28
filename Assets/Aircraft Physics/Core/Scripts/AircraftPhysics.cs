@@ -27,7 +27,7 @@ public class AircraftPhysics : MonoBehaviour
         return stallShake;
     }
 
-    private void Awake()
+    private void Start()
     {
         m_rigidbody = GetComponent<Rigidbody>();
         aerodynamicSurfaces = new List<AeroSurface>(GetComponentsInChildren<AeroSurface>());

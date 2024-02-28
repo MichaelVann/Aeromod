@@ -14,7 +14,13 @@ public class AeroSurface : MonoBehaviour
     internal float m_stallShake;
 
     internal void SetAeroSurfaceConfig(AeroSurfaceConfig a_config) { m_config = a_config; }
-    internal void SetControlInputType(ControlInputType a_inputType) { m_inputType = a_inputType; m_isControlSurface = a_inputType != ControlInputType.None; }
+    internal void SetControlInputType(ControlInputType a_inputType, float a_inputMultiplier)
+    { 
+        m_inputType = a_inputType;
+        m_isControlSurface = a_inputType != ControlInputType.None;
+        m_inputMultiplyer = a_inputMultiplier;
+    }
+
 
     public void SetFlapAngle(float angle)
     {
