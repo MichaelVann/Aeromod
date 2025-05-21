@@ -31,18 +31,25 @@ public class AircraftPhysics : MonoBehaviour
     {
         m_rigidbody = GetComponent<Rigidbody>();
         aerodynamicSurfaces = new List<AeroSurface>(GetComponentsInChildren<AeroSurface>());
+        UpdateMass();
+    }
+
+    void UpdateMass()
+    {
         float mass = 0f;
         for (int i = 0; i < m_aeroWeights.Count; i++)
         {
             mass += m_aeroWeights[i].GetWeight();
         }
+
         m_rigidbody.mass = mass;
+        CalculateCentreOfMass();
     }
 
     private void FixedUpdate()
     {
         BiVector3 forceAndTorqueThisFrame = 
-            CalculateAerodynamicForces(m_rigidbody.velocity, m_rigidbody.angularVelocity, Vector3.zero, 1.2f, m_rigidbody.worldCenterOfMass);
+            CalculateAerodynamicForces(m_rigidbody.linearVelocity, m_rigidbody.angularVelocity, Vector3.zero, 1.2f, m_rigidbody.worldCenterOfMass);
 
         //Vector3 velocityPrediction = PredictVelocity(forceAndTorqueThisFrame.p
         //    + transform.forward * thrust * m_thrustPercent + Physics.gravity * m_rigidbody.mass);
@@ -72,7 +79,7 @@ public class AircraftPhysics : MonoBehaviour
 
     private Vector3 PredictVelocity(Vector3 force)
     {
-        return m_rigidbody.velocity + Time.fixedDeltaTime * PREDICTION_TIMESTEP_FRACTION * force / m_rigidbody.mass;
+        return m_rigidbody.linearVelocity + Time.fixedDeltaTime * PREDICTION_TIMESTEP_FRACTION * force / m_rigidbody.mass;
     }
 
     private Vector3 PredictAngularVelocity(Vector3 torque)
@@ -94,11 +101,19 @@ public class AircraftPhysics : MonoBehaviour
         float sumMass = 0f;
         for (int i = 0; i < m_aeroWeights.Count; i++)
         {
-            centreOfMass += m_aeroWeights[i].transform.localPosition * m_aeroWeights[i].GetWeight();
+            centreOfMass += m_aeroWeights[i].transform.position * m_aeroWeights[i].GetWeight();
             sumMass += m_aeroWeights[i].GetWeight();
         }
 
         centreOfMass /= sumMass;
+
+        if (m_rigidbody == null)
+        {
+            m_rigidbody = GetComponent<Rigidbody>();
+        }
+
+        centreOfMass -= m_rigidbody.position;
+        centreOfMass = Quaternion.Inverse(m_rigidbody.transform.rotation) * centreOfMass;
 
         return centreOfMass;
     }

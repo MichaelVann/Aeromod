@@ -11,26 +11,30 @@ public class AircraftEngine : MonoBehaviour
     [SerializeField] AudioSource m_engineAudioSource;
     [SerializeField] AircraftPropeller m_propellerRef;
     [SerializeField] Light m_engineOnIndicator;
-    float m_engineInertia = 0f;
     bool m_engineOn = false;
     float m_throttle = 0f;
     float m_rpm = 0f;
-    float m_idleRPM = 300;
-    float m_maxRPM = 1200;
-    float m_timeToReachDesiredRPM = 4f;
-    [SerializeField] float m_maxTorque = 1000f;
+    [SerializeField] float m_maxRPM;
+    [SerializeField] float m_torquePerRPM;
     float m_engineToPropellerRPMRatio = 0.5f;
-    bool m_transitioning = false;
     Rigidbody m_owningRigidbody;
+
+    //Power
+    [SerializeField] float m_power;
+    [SerializeField] float m_inertia;
+    [SerializeField] float m_friction;
+
+    const float m_idealStoichiometricRatio = 14.7f;
 
     //Fuel
     [SerializeField] FuelTank[] m_availableFuelTanks;
     const float m_litresASecond = 0.0108f;
 
     internal float GetRPM() {  return m_rpm; }
+    internal float GetMaxRPM() { return m_maxRPM; }
     float GetRPMRatio() { return m_rpm / m_maxRPM; }
 
-    internal float GetTorque() { return m_maxTorque * GetRPMRatio(); }
+    internal float GetTorque() { return m_torquePerRPM * m_rpm; }
 
 
     internal void ToggleEngine() { SetEngineOn(!m_engineOn); }
@@ -76,6 +80,20 @@ public class AircraftEngine : MonoBehaviour
         m_engineOnIndicator.enabled = m_engineOn;
     }
 
+    internal void Init(float a_power = 120f, float a_inertia = 2000f, float a_friction = 0.08f, float a_maxRpm = 8000f, float a_torquePerRpm = 2f)
+    {
+        m_power = a_power;
+        m_inertia = a_inertia;
+        m_friction = a_friction;
+        m_maxRPM = a_maxRpm;
+        m_torquePerRPM = a_torquePerRpm;
+    }
+
+    private void Awake()
+    {
+        
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -83,20 +101,40 @@ public class AircraftEngine : MonoBehaviour
         SetEngineOn(false);
     }
 
-    void UpdateRPM()
+    void UpdateRPMEffects()
     {
-        float desiredRPM = m_engineOn ? m_maxRPM * m_throttle : 0f;
-        m_rpm = Mathf.Lerp(m_rpm, desiredRPM, Time.deltaTime / m_timeToReachDesiredRPM);
+        //float desiredRPM = m_engineOn ? m_maxRPM * m_throttle : 0f;
+        //m_rpm = Mathf.Lerp(m_rpm, desiredRPM, Time.deltaTime / m_timeToReachDesiredRPM);
+        //m_rpm = m_rpm > 1200 ? 1100: m_rpm;
         float rpmRatio = GetRPMRatio();
-        m_engineAudioSource.pitch = m_engineAudioSource.volume = 0.75f + rpmRatio * 0.5f;
+        m_engineAudioSource.pitch = m_rpm / 1200;
+        m_engineAudioSource.volume = 0.75f + rpmRatio * 0.5f;
         m_propellerRef.SetRPM(m_rpm * m_engineToPropellerRPMRatio);
+    }
+
+    void UpdateForces()
+    {
+        float appliedPower = m_engineOn ? m_throttle * m_power : 0f;
+        appliedPower *= m_rpm;
+
+        if (Input.GetKey(KeyCode.K))
+        {
+            appliedPower += 10f * m_inertia;
+        }
+
+        appliedPower -= m_friction * Mathf.Pow(m_rpm, 2f);
+
+        m_rpm += (Time.fixedDeltaTime * appliedPower / m_inertia);// - (Time.fixedDeltaTime * m_friction * Mathf.Pow(m_rpm, 2f));
+        //float engineFriction = Time.fixedDeltaTime * m_friction * Mathf.Pow(m_rpm, 2f);
+        //m_rpm -= engineFriction;
     }
 
     // Update is called once per frame
     void Update()
     {
-        UpdateRPM();
-
+        //UpdateRPM();
+        UpdateForces();
+        UpdateRPMEffects();
         if (m_engineOn)
         {
             if (!m_engineAudioSource.isPlaying)
@@ -132,6 +170,4 @@ public class AircraftEngine : MonoBehaviour
         Vector3 forwardForce = transform.forward * GetTorque();
         m_owningRigidbody.AddForce(forwardForce);
     }
-
-
 }

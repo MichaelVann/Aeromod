@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8745148557501866279}
+  - component: {fileID: 7279380110282152729}
   m_Layer: 0
   m_Name: Cockpit1
   m_TagString: Untagged
@@ -33,6 +34,19 @@ Transform:
   - {fileID: 3570904926110899393}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7279380110282152729
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6127097422908222678}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf8a7bf467b6ca54c85d2b4849dd9f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_weight: 250
 --- !u!1 &6705595486769441911
 GameObject:
   m_ObjectHideFlags: 0
@@ -77,7 +91,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba3872f9b6e0a784d865994b3c070640, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  config: {fileID: 11400000, guid: 2bce6334a5498d44a86af4afe0f3eef8, type: 2}
+  m_config: {fileID: 0}
   m_isControlSurface: 0
   m_inputType: 0
   m_inputMultiplyer: 1
@@ -130,7 +144,7 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -7511558181221131132, guid: 612134ba1c81b40409911daeef56ca32, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: af89a1e4d9fe762438872678b53b7f22, type: 2}
     - target: {fileID: 919132149155446097, guid: 612134ba1c81b40409911daeef56ca32, type: 3}

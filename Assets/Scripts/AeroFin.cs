@@ -18,6 +18,7 @@ public class AeroFin : MonoBehaviour
     [SerializeField] float m_flapFraction = 0.3f;
     [SerializeField] float m_controlSurfaceFraction = 0.5f;
     float m_centreOfLiftZOffset = 1f/4f;
+    [SerializeField] float m_zeroLiftAoA = 0f;
     [SerializeField] ControlInputType m_controlInputType;
     [SerializeField] bool m_leftSide = false;
     [SerializeField] bool m_centred = false;

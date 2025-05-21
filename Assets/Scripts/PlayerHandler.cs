@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
@@ -17,6 +18,8 @@ public class PlayerHandler : MonoBehaviour
     float m_lookSpeed = 2f;
     float m_lookXLimit = 90f;
 
+    float m_cash = 0;
+    [SerializeField] TextMeshProUGUI m_hudCashText;
 
     Vector3 m_velocity = Vector3.forward;
     float m_velocityFriction = 0.97f;
@@ -143,7 +146,6 @@ public class PlayerHandler : MonoBehaviour
             m_velocity = new Vector3(m_velocity.x * m_velocityFriction, m_velocity.y, m_velocity.z * m_velocityFriction);
 
             m_characterController.Move((m_velocity + characterMovement) * Time.deltaTime);
-
 
         }
         transform.localRotation *= Quaternion.Euler(0f, Input.GetAxis("Mouse X") * m_lookSpeed, 0f);

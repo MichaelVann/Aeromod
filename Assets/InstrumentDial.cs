@@ -14,9 +14,10 @@ public class InstrumentDial : MonoBehaviour
     [SerializeField] TextMeshProUGUI m_dialTitleTextRef;
 
     float m_faceRadius = 102f;
-    int m_maxReading = 400;
     float m_outerNeedleHalfGap = 45f;
     float m_measuredValue = 0f;
+    int m_maxReading = 400;
+    float m_minimumValue = 0f;
     bool m_showingSecondNeedle = false;
     float m_secondNeedleScale;
 
@@ -27,16 +28,18 @@ public class InstrumentDial : MonoBehaviour
     {
     }
 
-    internal void Init(string a_titleString, int a_majorDivisionAmount, int a_majorDivisions, int a_subDivisions, float a_outerNeedleHalfGap = 45f, bool a_dualNeedle = false, float a_secondNeedleScale = 10f)
+    internal void Init(string a_titleString, int a_majorDivisionAmount, int a_majorDivisions, int a_subDivisions, float a_minimumValue = 0f, float a_outerNeedleHalfGap = 45f, bool a_dualNeedle = false, float a_secondNeedleScale = 10f)
     {
         m_dialTitleTextRef.text = a_titleString;
         m_outerNeedleHalfGap = a_outerNeedleHalfGap;
         m_maxReading = a_majorDivisionAmount * (a_majorDivisions-1);
+        m_minimumValue = a_minimumValue;
         SpawnFaceMarkings(a_majorDivisions, a_subDivisions);
         m_showingSecondNeedle = a_dualNeedle;
         m_secondReadingNeedleRef.SetActive(m_showingSecondNeedle);
         m_secondNeedleScale = a_secondNeedleScale;
     }
+
 
     void SpawnOuterNeedle(float a_angle, float a_size, bool a_spawningText = false, int a_textValue = 0)
     {
@@ -62,7 +65,7 @@ public class InstrumentDial : MonoBehaviour
             float majorDivisionGap = angularSpaceUsed / (a_majorDivisions - 1);
             float angle = -m_outerNeedleHalfGap - majorDivisionGap * i;
             bool spawningText = m_outerNeedleHalfGap == 0f ? i < a_majorDivisions - 1 : true;
-            SpawnOuterNeedle(angle, 1f, spawningText, (i * m_maxReading)/ (a_majorDivisions-1));
+            SpawnOuterNeedle(angle, 1f, spawningText, (int)m_minimumValue + (m_maxReading * i / (a_majorDivisions-1)));
 
             if (i < a_majorDivisions-1)
             {
@@ -76,7 +79,7 @@ public class InstrumentDial : MonoBehaviour
 
     void RefreshReadingNeedle()
     {
-        float reading = m_measuredValue / m_maxReading;
+        float reading = (m_measuredValue - m_minimumValue) / m_maxReading;
         if (!m_showingSecondNeedle)
         {
             reading = Mathf.Clamp(reading, 0f, 1f);

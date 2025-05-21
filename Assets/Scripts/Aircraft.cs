@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UIElements;
 using static UnityEngine.UI.CanvasScaler;
 
 public class Aircraft : MonoBehaviour
@@ -19,6 +20,7 @@ public class Aircraft : MonoBehaviour
     [SerializeField] InstrumentDial m_rpmDialRef;
     [SerializeField] InstrumentDial m_altitudeDialRef;
     [SerializeField] InstrumentDial m_fuelDialRef;
+    [SerializeField] InstrumentDial m_climbDialRef;
 
     [SerializeField] AircraftEngine[] m_aircraftEngineRefs;
 
@@ -50,11 +52,13 @@ public class Aircraft : MonoBehaviour
     float m_throttle = 0f;
     float m_brakesTorque;
 
+    float m_prevAlt = 0f;
+
     AircraftPhysics m_aircraftPhysics;
 
     internal float GetSpeed()
     {
-        return m_rigidBody.velocity.magnitude;
+        return m_rigidBody.linearVelocity.magnitude;
     }
 
     internal void SetPlayerRef(PlayerHandler a_playerRef) { m_playerRef = a_playerRef; }
@@ -65,15 +69,19 @@ public class Aircraft : MonoBehaviour
         m_rigidBody = GetComponent<Rigidbody>();
         m_aircraftPhysics = GetComponent<AircraftPhysics>();
         FindControlSurfaces();
+
+        m_prevAlt = transform.position.y;
+
         InitialiseInstruments();
     }
 
     void InitialiseInstruments()
     {
         m_airspeedDialRef.Init("Airspeed mph", 25, 9, 3);
-        m_rpmDialRef.Init("RPM", 500, 5, 4);
-        m_altitudeDialRef.Init("Altitude 100m", 100, 11, 3, 0f, true);
+        m_rpmDialRef.Init("RPM", (int)m_aircraftEngineRefs[0].GetMaxRPM()/4, 5, 4);
+        m_altitudeDialRef.Init("Altitude 100m", 100, 11, 3, 0f, 0f, true);
         m_fuelDialRef.Init("Fuel Litres", (int)(m_aircraftEngineRefs[0].GetFuelCapacity()/10f), 11, 1);
+        m_climbDialRef.Init("Climb", 5, 9, 5, -20f);
     }
 
     void FindControlSurfaces()
@@ -134,13 +142,15 @@ public class Aircraft : MonoBehaviour
 
     private void UpdateUI()
     {
-        m_airSpeedText.text = "Speed: " + VLib.RoundToDecimalPlaces(VLib._msToMph * m_rigidBody.velocity.magnitude,1).ToString("f1") + " mph";
+        m_airSpeedText.text = "Speed: " + VLib.RoundToDecimalPlaces(VLib._msToMph * m_rigidBody.linearVelocity.magnitude,1).ToString("f1") + " mph";
         m_throttleText.text = "Throttle: " + VLib.RoundToDecimalPlaces(m_throttle * 100f, 1).ToString() + "%";
         m_altitudeText.text = "Alt: " + ((int)transform.position.y).ToString("D4") + " m";
-        m_airspeedDialRef.SetValue(VLib._msToMph * m_rigidBody.velocity.magnitude);
+        m_airspeedDialRef.SetValue(VLib._msToMph * m_rigidBody.linearVelocity.magnitude);
         m_rpmDialRef.SetValue(m_aircraftEngineRefs[0].GetRPM());
         m_altitudeDialRef.SetValue(transform.position.y);
         m_fuelDialRef.SetValue(m_aircraftEngineRefs[0].GetFuelLevel());
+        m_climbDialRef.SetValue((transform.position.y - m_prevAlt)/Time.deltaTime);
+        m_prevAlt = transform.position.y;
         //displayText.text = "V: " + ((int)m_rigidBody.velocity.magnitude).ToString("D3") + " m/s\n";
         //displayText.text += "A: " + ((int)transform.position.y).ToString("D4") + " m\n";
         //displayText.text += "T: " + (int)(thrustPercent * 100) + "%\n";
