@@ -169,7 +169,7 @@ public class AeroFin : MonoBehaviour
         topVerts.Add(frontTipVert);
 
         List<int> topTriangles = new List<int>();
-        int m_topMeshVertIndex = topVerts.Count;
+        int m_bottomVertIndexOffset = topVerts.Count;
 
         //Rounded Tip
         if (m_tipRounding > 0)
@@ -187,22 +187,22 @@ public class AeroFin : MonoBehaviour
 
                 if (i > 0)
                 {
-                    AddTriangle(topTriangles, m_topMeshVertIndex - 1, m_topMeshVertIndex + i - 1, m_topMeshVertIndex + i);
+                    AddTriangle(topTriangles, m_bottomVertIndexOffset - 1, m_bottomVertIndexOffset + i - 1, m_bottomVertIndexOffset + i);
                 }
             }
-            AddTriangle(topTriangles, m_topMeshVertIndex - 1, m_topMeshVertIndex + m_tipRoundingFidelity - 1, m_topMeshVertIndex + m_tipRoundingFidelity);
+            AddTriangle(topTriangles, m_bottomVertIndexOffset - 1, m_bottomVertIndexOffset + m_tipRoundingFidelity - 1, m_bottomVertIndexOffset + m_tipRoundingFidelity);
         }
 
-        m_topMeshVertIndex = topVerts.Count;
+        m_bottomVertIndexOffset = topVerts.Count;
 
         //Front edge
-        Vector3 reatRootVert = new Vector3(m_rootX * m_mirrorMultiplier, m_finWidth / 2f, -m_baseChord / 2f);
+        Vector3 rearRootVert = new Vector3(m_rootX * m_mirrorMultiplier, m_finWidth / 2f, -m_baseChord / 2f);
         Vector3 rearTipVert = new Vector3(m_mirrorMultiplier * (m_rootX + m_span), m_finWidth / 2f, -m_tipChord / 2f);
         rearTipVert.z += m_tipOffset;
 
         topVerts.Add(rearTipVert);
         AddSpanRounding(topVerts, false);
-        topVerts.Add(reatRootVert);
+        topVerts.Add(rearRootVert);
 
         //Top wing surface
 
@@ -216,16 +216,8 @@ public class AeroFin : MonoBehaviour
             AddTriangle(topTriangles, i +1 , anchorVert - 1, anchorVert);
         }
 
-        //topTriangles.Add(0);
-        //topTriangles.Add(1);
-        //topTriangles.Add(m_topMeshVertIndex);
 
-        //topTriangles.Add(0);
-        //topTriangles.Add(m_topMeshVertIndex);
-        //topTriangles.Add(m_topMeshVertIndex+1);
-
-
-        m_topMeshVertIndex = topVerts.Count;
+        m_bottomVertIndexOffset = topVerts.Count;
 
         //Duplicate bottom tris
         List<Vector3> bottomVerts = new List<Vector3>(topVerts);
@@ -236,7 +228,7 @@ public class AeroFin : MonoBehaviour
         List<int> bottomTriangles = new List<int>(topTriangles);
         for (int i = 0; i < bottomTriangles.Count; i++)
         {
-            bottomTriangles[i] += m_topMeshVertIndex;
+            bottomTriangles[i] += m_bottomVertIndexOffset;
         }
 
         for (int i = 0; i < bottomTriangles.Count; i += 3)
@@ -252,9 +244,13 @@ public class AeroFin : MonoBehaviour
         //Stitch top and bottom
         for (int i = 1; i < topVerts.Count; i++)
         {
-            AddTriangle(stitchTriangles, i - 1 + m_topMeshVertIndex, i, i - 1);
-            AddTriangle(stitchTriangles, i - 1 + m_topMeshVertIndex, i + m_topMeshVertIndex, i);
+            AddTriangle(stitchTriangles, i - 1 + m_bottomVertIndexOffset, i, i - 1);
+            AddTriangle(stitchTriangles, i - 1 + m_bottomVertIndexOffset, i + m_bottomVertIndexOffset, i);
         }
+
+        //Close base              
+        AddTriangle(stitchTriangles, m_bottomVertIndexOffset + bottomVerts.Count - 1, m_bottomVertIndexOffset, m_bottomVertIndexOffset - 1);
+        AddTriangle(stitchTriangles, m_bottomVertIndexOffset, 0, m_bottomVertIndexOffset - 1);
 
         meshVerts.AddRange(topVerts);
         meshVerts.AddRange(bottomVerts);
