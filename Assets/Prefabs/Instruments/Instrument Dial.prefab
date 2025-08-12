@@ -263,15 +263,17 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_enableWordWrapping: 1
+  m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
+  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
+  m_EmojiFallbackSupport: 1
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
@@ -704,15 +706,15 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -7511558181221131132, guid: b7d6fecaa607a534180856a6256ad768, type: 3}
-      propertyPath: m_Materials.Array.data[0]
+      propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 7578971181913737488, guid: 829b6fc552ae0ab4fb452704037b9af7, type: 3}
+      objectReference: {fileID: 2100000, guid: 35a53843ec641d44ea9b2652969f2e07, type: 2}
     - target: {fileID: -7511558181221131132, guid: b7d6fecaa607a534180856a6256ad768, type: 3}
-      propertyPath: m_Materials.Array.data[1]
+      propertyPath: 'm_Materials.Array.data[1]'
       value: 
-      objectReference: {fileID: 2100000, guid: 1c65631fd837aab4bad4f3afb9da5f22, type: 2}
+      objectReference: {fileID: 2100000, guid: 9bf8ef6ddf6c4034a8474b1a06cef3b1, type: 2}
     - target: {fileID: -7511558181221131132, guid: b7d6fecaa607a534180856a6256ad768, type: 3}
-      propertyPath: m_Materials.Array.data[2]
+      propertyPath: 'm_Materials.Array.data[2]'
       value: 
       objectReference: {fileID: 2100000, guid: 49d5615c6fa63924d9bb054f0666e688, type: 2}
     - target: {fileID: 919132149155446097, guid: b7d6fecaa607a534180856a6256ad768, type: 3}
