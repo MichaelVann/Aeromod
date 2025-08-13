@@ -119,14 +119,12 @@ public class AircraftEngine : MonoBehaviour
 
         if (Input.GetKey(KeyCode.K))
         {
-            appliedPower += 10f * m_inertia;
+            appliedPower += 5000f * m_inertia / (Mathf.Max(m_rpm, 100));
         }
 
         appliedPower -= m_friction * Mathf.Pow(m_rpm, 2f);
 
-        m_rpm += (Time.fixedDeltaTime * appliedPower / m_inertia);// - (Time.fixedDeltaTime * m_friction * Mathf.Pow(m_rpm, 2f));
-        //float engineFriction = Time.fixedDeltaTime * m_friction * Mathf.Pow(m_rpm, 2f);
-        //m_rpm -= engineFriction;
+        m_rpm += (Time.fixedDeltaTime * appliedPower / m_inertia);
     }
 
     // Update is called once per frame

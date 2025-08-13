@@ -193,7 +193,6 @@ public class AeroFin : MonoBehaviour
             AddTriangle(topTriangles, m_bottomVertIndexOffset - 1, m_bottomVertIndexOffset + m_tipRoundingFidelity - 1, m_bottomVertIndexOffset + m_tipRoundingFidelity);
         }
 
-        m_bottomVertIndexOffset = topVerts.Count;
 
         //Front edge
         Vector3 rearRootVert = new Vector3(m_rootX * m_mirrorMultiplier, m_finWidth / 2f, -m_baseChord / 2f);
